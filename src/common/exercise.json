@@ -1,0 +1,40 @@
+{
+  "category": "胸",
+  "exercises": [
+    {
+      "id": 1,
+      "name_jp": "ベンチプレス",
+      "rest_seconds": 120
+    },
+    {
+      "id": 2,
+      "name_jp": "インクラインベンチプレス",
+      "rest_seconds": 120
+    },
+    {
+      "id": 3,
+      "name_jp": "ディップス",
+      "rest_seconds": 120
+    },
+    {
+      "id": 4,
+      "name_jp": "インクラインダンベルプレス",
+      "rest_seconds": 120
+    },
+    {
+      "id": 5,
+      "name_jp": "ダンベルフライ",
+      "rest_seconds": 90
+    },
+    {
+      "id": 6,
+      "name_jp": "ケーブルクロスオーバー",
+      "rest_seconds": 60
+    },
+    {
+      "id": 7,
+      "name_jp": "腕立て伏せ",
+      "rest_seconds": 60
+    }
+  ]
+}
