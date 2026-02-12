@@ -1,74 +1,25 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { supabase } from '../utils/supabase'
-import Tesseract from 'tesseract.js'
 
-const cameraImage = ref(null) // 撮影画像のURL
-const ocrResult = ref({
-  // OCRで解析した栄養情報
-  calorie: 0,
-  protein: 0,
-  fat: 0,
-  carb: 0,
-})
-
-const analyzeImage = async () => {
-  if (!cameraImage.value) return
-  const result = await Tesseract.recognize(cameraImage.value, 'eng') // 英語対応
-  const text = result.data.text
-  console.log('OCR結果:', text)
-
-  // 簡易パターンマッチングで栄養素を抽出
-  const regexCalorie = /calories?\s*[:=]?\s*(\d+)/i
-  const regexProtein = /protein\s*[:=]?\s*(\d+)/i
-  const regexFat = /fat\s*[:=]?\s*(\d+)/i
-  const regexCarb = /carbs?\s*[:=]?\s*(\d+)/i
-
-  ocrResult.value.calorie = Number((text.match(regexCalorie) || [0, 0])[1])
-  ocrResult.value.protein = Number((text.match(regexProtein) || [0, 0])[1])
-  ocrResult.value.fat = Number((text.match(regexFat) || [0, 0])[1])
-  ocrResult.value.carb = Number((text.match(regexCarb) || [0, 0])[1])
-
-  // newMeal に反映
-  newMeal.value = {
-    name: 'OCR商品',
-    ...ocrResult.value,
-  }
-}
-
-const captureImage = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-    const video = document.createElement('video')
-    video.srcObject = stream
-    await video.play()
-
-    // 1フレームキャプチャ
-    const canvas = document.createElement('canvas')
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-    const ctx = canvas.getContext('2d')
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-
-    // 画像を保存
-    cameraImage.value = canvas.toDataURL('image/png')
-
-    // ビデオ停止
-    stream.getTracks().forEach((track) => track.stop())
-  } catch (err) {
-    console.error('カメラエラー:', err)
-    alert('カメラにアクセスできません')
-  }
-}
+/**
+ * イベント emit 定義
+ * @event add - 食事追加時
+ * @event close - パネル閉じる
+ */
 const emit = defineEmits(['add', 'close'])
+
 
 /* =============================
    モード切替
+   manual: 自由入力
+   db: DBから選択
 ============================= */
-const mode = ref('manual') // manual, db, camera
+const mode = ref('manual')
+
 
 /* =============================
-   ① 自由入力
+   ① 自由入力用データ
 ============================= */
 const newMeal = ref({
   name: '',
@@ -78,49 +29,84 @@ const newMeal = ref({
   carb: 0,
 })
 
+
 /* =============================
-   ② DB取得
+   ② DB取得用データ
 ============================= */
 const foods = ref([])
 const selectedFood = ref(null)
+const quantity = ref(1)
 
+/**
+ * コンポーネントマウント時にDBから食品リストを取得
+ */
 onMounted(async () => {
   const { data, error } = await supabase.from('foods').select('*')
 
-  if (!error) foods.value = data
+  if (error) {
+    console.error('食品リスト取得エラー:', error)
+  } else {
+    foods.value = data
+  }
 })
 
+/**
+ * 食品を選択
+ * @param {Object} food - 選択された食品
+ */
 const selectFood = (food) => {
   selectedFood.value = food
   newMeal.value = { ...food }
+  quantity.value = 1
 }
 
+
 /* =============================
-   追加処理
+   食事追加処理
 ============================= */
+
+/**
+ * 食事追加ボタン押下時の処理
+ */
 const handleAdd = async () => {
   if (!newMeal.value.name) return
 
+  let mealToAdd = { ...newMeal.value }
+
   if (mode.value === 'manual') {
-    // 自由入力用の登録
     await addManualMeal()
   } else if (mode.value === 'db') {
-    // DB選択用の登録
     await addDbMeal()
+
+    // 選択したDB食品の場合、数量分を掛け算
+    mealToAdd = {
+      ...newMeal.value,
+      name: `${newMeal.value.name} ×${quantity.value}`,
+      calorie: newMeal.value.calorie * quantity.value,
+      protein: newMeal.value.protein * quantity.value,
+      fat: newMeal.value.fat * quantity.value,
+      carb: newMeal.value.carb * quantity.value,
+    }
   }
 
-  // 共通: 親に emit & フォーム閉じる
-  emit('add', { ...newMeal.value })
+  emit('add', mealToAdd)
   emit('close')
 
-  // リセット
+  // 入力値リセット
   newMeal.value = { name: '', calorie: 0, protein: 0, fat: 0, carb: 0 }
   selectedFood.value = null
+  quantity.value = 1
 }
 
-/* 自由入力登録 */
+
+/* =============================
+   自由入力DB登録
+============================= */
+
+/**
+ * 自由入力で作成した食事をDBに登録
+ */
 const addManualMeal = async () => {
-  // Supabase への保存（数値は Number に変換）
   const { data, error } = await supabase
     .from('foods')
     .insert([
@@ -140,10 +126,16 @@ const addManualMeal = async () => {
   }
 }
 
-/* DB選択登録 */
+
+/* =============================
+   DB選択食事登録
+============================= */
+
+/**
+ * DBから選択した食事を登録
+ * （必要であれば再DB保存も可能）
+ */
 const addDbMeal = async () => {
-  // DBから選んだものはそのまま親に渡すだけでも OK
-  // もしDBに再保存したい場合も addManualMeal と同じ形で insert 可能
   console.log('DBから選択した食事を登録:', newMeal.value)
 }
 </script>
@@ -157,11 +149,10 @@ const addDbMeal = async () => {
       <div class="tabs">
         <button @click="mode = 'manual'" :class="{ active: mode === 'manual' }">自由入力</button>
         <button @click="mode = 'db'" :class="{ active: mode === 'db' }">DBから選択</button>
-        <button @click="mode = 'camera'" :class="{ active: mode === 'camera' }">カメラ撮影</button>
       </div>
 
       <!-- =============================
-           ① 自由入力
+           ① 自由入力フォーム
       ============================= -->
       <div v-if="mode === 'manual'" class="manual-form">
         <div class="form-group">
@@ -191,7 +182,7 @@ const addDbMeal = async () => {
       </div>
 
       <!-- =============================
-           ② DB選択
+           ② DBから選択
       ============================= -->
       <div v-if="mode === 'db'" class="food-list">
         <div
@@ -202,25 +193,23 @@ const addDbMeal = async () => {
           @click="selectFood(food)"
         >
           <strong>{{ food.name }}</strong>
-          <p>{{ food.calorie }}kcal | P{{ food.protein }} F{{ food.fat }} C{{ food.carb }}</p>
-        </div>
-      </div>
 
-      <div v-if="mode === 'camera'" class="camera-mode">
-        <div v-if="!cameraImage">
-          <button @click="captureImage">📷 撮影</button>
+          <!-- 選択中の数量を掛けた栄養表示 -->
+          <p v-if="selectedFood && selectedFood.id === food.id">
+            {{ food.calorie * quantity }}kcal | P {{ food.protein * quantity }} F
+            {{ food.fat * quantity }} C {{ food.carb * quantity }}
+          </p>
+
+          <!-- 通常表示 -->
+          <p v-else>
+            {{ food.calorie }}kcal | P {{ food.protein }} F {{ food.fat }} C {{ food.carb }}
+          </p>
         </div>
 
-        <div v-else>
-          <img :src="cameraImage" alt="Captured" />
-          <button @click="analyzeImage">🔍 栄養素解析</button>
-          <div v-if="ocrResult.calorie || ocrResult.protein || ocrResult.fat || ocrResult.carb">
-            <p>カロリー: {{ ocrResult.calorie }} kcal</p>
-            <p>タンパク質: {{ ocrResult.protein }} g</p>
-            <p>脂質: {{ ocrResult.fat }} g</p>
-            <p>炭水化物: {{ ocrResult.carb }} g</p>
-          </div>
-          <button @click="cameraImage = null">撮り直す</button>
+        <!-- 選択中のみ数量入力 -->
+        <div v-if="selectedFood" class="quantity-box">
+          <label>数量</label>
+          <input type="number" min="1" v-model.number="quantity" />
         </div>
       </div>
 
