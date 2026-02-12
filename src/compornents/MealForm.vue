@@ -80,7 +80,7 @@ const handleAdd = async () => {
     // 選択したDB食品の場合、数量分を掛け算
     mealToAdd = {
       ...newMeal.value,
-      name: `${newMeal.value.name} ×${quantity.value}`,
+      name: `${newMeal.value.name} ×${quantity.value}`, //あいい
       calorie: newMeal.value.calorie * quantity.value,
       protein: newMeal.value.protein * quantity.value,
       fat: newMeal.value.fat * quantity.value,
@@ -138,12 +138,8 @@ const addDbMeal = async () => {
 
   const now = new Date()
 
-  // quantity分の栄養計算
+
   const updatedMeal = {
-    calorie: Number(selectedFood.value.calorie) * quantity.value,
-    protein: Number(selectedFood.value.protein) * quantity.value,
-    fat: Number(selectedFood.value.fat) * quantity.value,
-    carb: Number(selectedFood.value.carb) * quantity.value,
     date: now, // timestamp 更新
   }
 

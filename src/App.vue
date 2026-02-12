@@ -84,7 +84,7 @@ const newMeal = ref({
 const addMeal = (meal) => {
   if (!meal || !meal.name) return
   meals.value.push({ ...meal })
-  localStorage.setItem('meals', JSON.stringify(meals.value))
+  //localStorage.setItem('meals', JSON.stringify(meals.value))
 }
 
 const total = computed(() => {
