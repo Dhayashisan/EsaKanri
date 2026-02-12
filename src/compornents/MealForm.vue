@@ -190,8 +190,8 @@ const addDbMeal = async () => {
 
           <!-- 選択中の数量を掛けた栄養表示 -->
           <p v-if="selectedFood && selectedFood.id === food.id">
-            {{ food.calorie * quantity }}kcal | P {{ food.protein * quantity }} F
-            {{ food.fat * quantity }} C {{ food.carb * quantity }}
+            {{ food.calorie * quantity }}kcal | P {{ (food.protein * quantity).toFixed(1) }} F
+            {{ (food.fat * quantity).toFixed(1) }} C {{ (food.carb * quantity).toFixed(1) }}
             <input type="number" min="1" v-model.number="quantity" />
           </p>
 

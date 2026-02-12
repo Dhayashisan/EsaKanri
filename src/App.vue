@@ -14,6 +14,7 @@ const toggleGoalSetting = () => {
 }
 
 const showMealForm = ref(false)
+const showMeals = ref(false) // トグル表示用
 
 const toggleMealForm = () => {
   showMealForm.value = !showMealForm.value
@@ -158,6 +159,20 @@ const resetAll = () => {
             :fatGram="fatGram"
             :carbGram="carbGram"
           />
+          <!-- 🔥 ここに追加済み食事リストトグル -->
+          <div class="added-meals">
+            <button @click="showMeals = !showMeals">
+              {{ showMeals ? '▲ 登録済み食事を隠す' : '▼ 登録済み食事を表示' }}
+            </button>
+
+            <ul v-if="showMeals">
+              <li v-for="(meal, index) in meals" :key="index">
+                {{ meal.name }} - {{ meal.calorie }}kcal | P{{ meal.protein }} F{{ meal.fat }} C{{
+                  meal.carb
+                }}
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -165,7 +180,6 @@ const resetAll = () => {
 </template>
 
 <style scoped>
-
 /* 全体 */
 main {
   min-height: 100vh;
@@ -274,5 +288,24 @@ button:disabled {
   .meal-buttons {
     gap: 6px;
   }
+}
+
+.added-meals {
+  margin-top: 12px;
+}
+
+.added-meals ul {
+  max-height: 200px;
+  overflow-y: auto;
+  padding-left: 16px;
+  margin-top: 8px;
+  background: #1e1e1e;
+  border-radius: 6px;
+  list-style: none;
+}
+
+.added-meals li {
+  padding: 6px 8px;
+  border-bottom: 1px solid #333;
 }
 </style>
