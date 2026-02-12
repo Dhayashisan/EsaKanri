@@ -97,6 +97,17 @@ const total = computed(() => {
     { calorie: 0, protein: 0, fat: 0, carb: 0 },
   )
 })
+
+const resetAll = () => {
+  // 食事リストをリセット → total も自動で 0 になる
+  meals.value = []
+  localStorage.removeItem('meals')
+
+  // 新規入力フォームもリセット
+  newMeal.value = { name: '', calorie: 0, protein: 0, fat: 0, carb: 0 }
+
+
+}
 </script>
 
 <template>
@@ -124,7 +135,10 @@ const total = computed(() => {
           <!-- 食事登録 -->
           <h2>🍽 食事管理</h2>
 
-          <button @click="toggleMealForm">食事を登録する</button>
+          <div class="meal-buttons">
+            <button @click="toggleMealForm">食事を登録する</button>
+            <button @click="resetAll" class="reset-btn">リセット</button>
+          </div>
 
           <MealForm v-if="showMealForm" @add="addMeal" @close="showMealForm = false" />
 
@@ -150,6 +164,21 @@ main {
   justify-content: center;
   background-color: #121212;
   color: #fff;
+}
+
+.meal-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.reset-btn {
+  background: #ff5252;
+  color: white;
+}
+
+.reset-btn:hover {
+  opacity: 0.8;
 }
 
 .login {
