@@ -1,42 +1,103 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import TraningView from '@/compornents/TraningView.vue'
-
-const isMode = ref(false)
+import { ref, onMounted, computed } from 'vue'
+import GoalSetting from './compornents/GoalSetting.vue'
+import MealForm from './compornents/MealForm.vue'
 const username = ref('')
 const isEntered = ref(false)
-const currentMode = ref('training') // 'training' or 'graph'
 
-// 名前入力処理
+// 目標設定表示フラグ
+const showGoalSetting = ref(false)
+// トグル処理
+const toggleGoalSetting = () => {
+  showGoalSetting.value = !showGoalSetting.value
+}
+
+const showMealForm = ref(false)
+
+const toggleMealForm = () => {
+  showMealForm.value = !showMealForm.value
+}
+
+// 保存時に閉じる
+const saveGoal = () => {
+  localStorage.setItem('goal', JSON.stringify(goal.value))
+  alert('目標を保存しました')
+  showGoalSetting.value = false
+}
+/* =============================
+   ログイン処理
+============================= */
 const enterName = () => {
   if (!username.value) return
   localStorage.setItem('username', username.value)
   isEntered.value = true
 }
 
-// 初回ロード時に名前があればスキップ
 onMounted(() => {
   const savedName = localStorage.getItem('username')
   if (savedName) {
     username.value = savedName
     isEntered.value = true
   }
+
+  const savedGoal = localStorage.getItem('goal')
+  if (savedGoal) goal.value = JSON.parse(savedGoal)
+
+  const savedMeals = localStorage.getItem('meals')
+  if (savedMeals) meals.value = JSON.parse(savedMeals)
 })
 
-// モード切替
-const showTraining = () => {
-  currentMode.value = 'training'
-  isMode.value = true
+/* =============================
+   目標設定（カロリー＋PFC比率）
+============================= */
+const goal = ref({
+  calorie: 2000,
+  ratioProtein: 30,
+  ratioFat: 20,
+  ratioCarb: 50,
+})
+
+/* 🔥 自動計算（g換算） */
+const proteinGram = computed(() =>
+  Math.round((goal.value.calorie * goal.value.ratioProtein) / 100 / 4),
+)
+
+const fatGram = computed(() => Math.round((goal.value.calorie * goal.value.ratioFat) / 100 / 9))
+
+const carbGram = computed(() => Math.round((goal.value.calorie * goal.value.ratioCarb) / 100 / 4))
+
+/* =============================
+   食事登録
+============================= */
+const meals = ref([])
+
+const newMeal = ref({
+  name: '',
+  calorie: 0,
+  protein: 0,
+  fat: 0,
+  carb: 0,
+})
+
+const addMeal = () => {
+  if (!newMeal.value.name) return
+  meals.value.push({ ...newMeal.value })
+  localStorage.setItem('meals', JSON.stringify(meals.value))
+  newMeal.value = { name: '', calorie: 0, protein: 0, fat: 0, carb: 0 }
 }
 
-const showGraph = () => {
-  currentMode.value = 'graph'
-  isMode.value = true
-}
-
-const closeTraining = () => {
-  isMode.value = false
-}
+const total = computed(() => {
+  return meals.value.reduce(
+    (acc, meal) => {
+      acc.calorie += Number(meal.calorie)
+      acc.protein += Number(meal.protein)
+      acc.fat += Number(meal.fat)
+      acc.carb += Number(meal.carb)
+      return acc
+    },
+    { calorie: 0, protein: 0, fat: 0, carb: 0 },
+  )
+})
 </script>
 
 <template>
@@ -48,20 +109,35 @@ const closeTraining = () => {
         <button @click="enterName">Start</button>
       </div>
 
-      <div v-else class="main-contents">
-        <div v-if="isMode">
-          <TraningView :mode="currentMode" @close-training="closeTraining" />
+      <div v-else>
+        <div class="header">
+          <h1>Welcome {{ username }} 🐈</h1>
         </div>
 
-        <div v-else>
-          <div class="header">
-            <h1>Welcome {{ username }} 💪</h1>
-          </div>
+        <div class="main-contents">
+          <!-- 目標設定 -->
+          <button @click="toggleGoalSetting">
+            {{ showGoalSetting ? '閉じる' : '目標設定を開く' }}
+          </button>
 
-          <button @click="showTraining">Training💛</button>
-          <button>Edit</button>
-          <button>Setting</button>
-          <button @click="showGraph">Graph💛</button>
+          <GoalSetting v-if="showGoalSetting" :goal="goal" @save="saveGoal" />
+
+          <!-- 食事登録 -->
+          <h2>🍽 食事管理</h2>
+
+          <button @click="toggleMealForm">食事を登録する</button>
+
+          <MealForm v-if="showMealForm" @add="addMeal" @close="showMealForm = false" />
+
+          <!-- 合計表示 -->
+
+          <h2>📊 今日の合計</h2>
+          <div class="card">
+            <p>Calories: {{ total.calorie }} / {{ goal.calorie }}</p>
+            <p>Protein: {{ total.protein }} / {{ proteinGram }}</p>
+            <p>Fat: {{ total.fat }} / {{ fatGram }}</p>
+            <p>Carb: {{ total.carb }} / {{ carbGram }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -69,9 +145,6 @@ const closeTraining = () => {
 </template>
 
 <style scoped>
-/* =========================
-   全体レイアウト
-========================= */
 main {
   min-height: 100vh;
   display: flex;
@@ -82,65 +155,50 @@ main {
 
 .login {
   width: 100%;
-  max-width: 960px;
-  padding: 16px;
+  max-width: 600px;
+  padding: 20px;
 }
 
-/* =========================
-   ログイン画面
-========================= */
-.loginform {
+.card {
+  background: #1e1e1e;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 20vh;
+  gap: 8px;
 }
 
-.loginform input {
-  padding: 12px;
-  font-size: 16px;
+input {
+  padding: 8px;
+  border-radius: 4px;
+  border: none;
 }
 
-.loginform button {
-  padding: 12px;
-  font-size: 16px;
+button {
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  background: #4caf50;
+  color: white;
+  cursor: pointer;
 }
 
-/* =========================
-   トップ画面
-========================= */
-.main-contents {
-  width: 100%;
+button:hover {
+  opacity: 0.8;
 }
 
-.header {
-  margin-bottom: 24px;
+.error {
+  border: 2px solid #ff5252;
 }
 
-/* メニューボタン */
-.main-contents button {
-  width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  margin-bottom: 12px;
-  border-radius: 8px;
+.error-text {
+  color: #ff5252;
+  font-weight: bold;
 }
 
-/* =========================
-   PC向け微調整
-========================= */
-@media screen and (min-width: 769px) {
-  .login {
-    padding: 32px;
-  }
-
-  .loginform {
-    max-width: 400px;
-    margin: 20vh auto 0;
-  }
-
-  .main-contents button {
-    max-width: 320px;
-  }
+button:disabled {
+  background: gray;
+  cursor: not-allowed;
 }
 </style>
