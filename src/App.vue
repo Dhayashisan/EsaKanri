@@ -79,11 +79,10 @@ const newMeal = ref({
   carb: 0,
 })
 
-const addMeal = () => {
-  if (!newMeal.value.name) return
-  meals.value.push({ ...newMeal.value })
+const addMeal = (meal) => {
+  if (!meal || !meal.name) return
+  meals.value.push({ ...meal })
   localStorage.setItem('meals', JSON.stringify(meals.value))
-  newMeal.value = { name: '', calorie: 0, protein: 0, fat: 0, carb: 0 }
 }
 
 const total = computed(() => {
@@ -134,9 +133,9 @@ const total = computed(() => {
           <h2>📊 今日の合計</h2>
           <div class="card">
             <p>Calories: {{ total.calorie }} / {{ goal.calorie }}</p>
-            <p>Protein: {{ total.protein }} / {{ proteinGram }}</p>
-            <p>Fat: {{ total.fat }} / {{ fatGram }}</p>
-            <p>Carb: {{ total.carb }} / {{ carbGram }}</p>
+            <p>Protein: {{ total.protein.toFixed(1) }} / {{ proteinGram.toFixed(1) }}</p>
+            <p>Fat: {{ total.fat.toFixed(1) }} / {{ fatGram.toFixed(1) }}</p>
+            <p>Carb: {{ total.carb.toFixed(1) }} / {{ carbGram.toFixed(1) }}</p>
           </div>
         </div>
       </div>

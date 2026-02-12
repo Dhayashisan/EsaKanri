@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { supabase } from './supabase'
+import { supabase } from '../utils/supabase'
 
 const emit = defineEmits(['add', 'close'])
 
@@ -27,9 +27,7 @@ const foods = ref([])
 const selectedFood = ref(null)
 
 onMounted(async () => {
-  const { data, error } = await supabase
-    .from('foods')
-    .select('*')
+  const { data, error } = await supabase.from('foods').select('*')
 
   if (!error) foods.value = data
 })
@@ -59,12 +57,8 @@ const handleAdd = () => {
 
       <!-- モード切替 -->
       <div class="tabs">
-        <button @click="mode = 'manual'" :class="{ active: mode==='manual' }">
-          自由入力
-        </button>
-        <button @click="mode = 'db'" :class="{ active: mode==='db' }">
-          DBから選択
-        </button>
+        <button @click="mode = 'manual'" :class="{ active: mode === 'manual' }">自由入力</button>
+        <button @click="mode = 'db'" :class="{ active: mode === 'db' }">DBから選択</button>
       </div>
 
       <!-- =============================
@@ -86,6 +80,7 @@ const handleAdd = () => {
           v-for="food in foods"
           :key="food.id"
           class="food-item"
+          :class="{ selected: selectedFood && selectedFood.id === food.id }"
           @click="selectFood(food)"
         >
           <strong>{{ food.name }}</strong>
@@ -104,7 +99,7 @@ const handleAdd = () => {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -160,5 +155,10 @@ button {
 
 .close {
   background: gray;
+}
+
+.food-item.selected {
+  background-color: #b16eb9;
+  color: white;
 }
 </style>
