@@ -165,7 +165,7 @@ const resetAll = () => {
 </template>
 
 <style scoped>
-<style scoped>
+
 /* 全体 */
 main {
   min-height: 100vh;
