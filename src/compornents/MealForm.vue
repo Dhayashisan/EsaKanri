@@ -43,35 +43,45 @@ const selectFood = (food) => {
 const handleAdd = async () => {
   if (!newMeal.value.name) return
 
-  // ① Supabase に保存
-  const { data, error } = await supabase
-    .from('foods')
-    .insert([
-      {
-        name: newMeal.value.name,
-        calorie: String(newMeal.value.calorie),
-        protein: String(newMeal.value.protein),
-        fat: String(newMeal.value.fat),
-        carb: String(newMeal.value.carb),
-      }
-    ])
-    .select() // 挿入後のデータを取得（optional）
-
-  if (error) {
-    console.error('DB登録エラー:', error)
-    alert('DB登録に失敗しました')
-    return
+  if (mode.value === 'manual') {
+    // 自由入力用の登録
+    await addManualMeal()
+  } else if (mode.value === 'db') {
+    // DB選択用の登録
+    await addDbMeal()
   }
 
-  // ② ローカルにも追加（親に emit）
+  // 共通: 親に emit & フォーム閉じる
   emit('add', { ...newMeal.value })
-
-  // ③ フォーム閉じる
   emit('close')
 
-  // ④ フォームリセット
+  // リセット
   newMeal.value = { name: '', calorie: 0, protein: 0, fat: 0, carb: 0 }
   selectedFood.value = null
+}
+
+/* 自由入力登録 */
+const addManualMeal = async () => {
+  // Supabase への保存（数値は Number に変換）
+  const { data, error } = await supabase.from('foods').insert([{
+    name: newMeal.value.name,
+    calorie: Number(newMeal.value.calorie),
+    protein: Number(newMeal.value.protein),
+    fat: Number(newMeal.value.fat),
+    carb: Number(newMeal.value.carb),
+  }]).select()
+
+  if (error) {
+    console.error('自由入力DB登録エラー:', error)
+    alert('DB登録に失敗しました')
+  }
+}
+
+/* DB選択登録 */
+const addDbMeal = async () => {
+  // DBから選んだものはそのまま親に渡すだけでも OK
+  // もしDBに再保存したい場合も addManualMeal と同じ形で insert 可能
+  console.log('DBから選択した食事を登録:', newMeal.value)
 }
 </script>
 

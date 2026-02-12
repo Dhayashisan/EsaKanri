@@ -4,6 +4,7 @@ import GoalSetting from './compornents/GoalSetting.vue'
 import MealForm from './compornents/MealForm.vue'
 const username = ref('')
 const isEntered = ref(false)
+import MealChart from './compornents/MealChart.vue'
 
 // 目標設定表示フラグ
 const showGoalSetting = ref(false)
@@ -105,8 +106,6 @@ const resetAll = () => {
 
   // 新規入力フォームもリセット
   newMeal.value = { name: '', calorie: 0, protein: 0, fat: 0, carb: 0 }
-
-
 }
 </script>
 
@@ -151,6 +150,14 @@ const resetAll = () => {
             <p>Fat: {{ total.fat.toFixed(1) }} / {{ fatGram.toFixed(1) }}</p>
             <p>Carb: {{ total.carb.toFixed(1) }} / {{ carbGram.toFixed(1) }}</p>
           </div>
+          <h2>📊 今日の合計グラフ</h2>
+          <MealChart
+            :total="total"
+            :goal="goal"
+            :proteinGram="proteinGram"
+            :fatGram="fatGram"
+            :carbGram="carbGram"
+          />
         </div>
       </div>
     </div>
