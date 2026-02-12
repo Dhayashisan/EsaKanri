@@ -40,11 +40,36 @@ const selectFood = (food) => {
 /* =============================
    追加処理
 ============================= */
-const handleAdd = () => {
+const handleAdd = async () => {
   if (!newMeal.value.name) return
+
+  // ① Supabase に保存
+  const { data, error } = await supabase
+    .from('foods')
+    .insert([
+      {
+        name: newMeal.value.name,
+        calorie: String(newMeal.value.calorie),
+        protein: String(newMeal.value.protein),
+        fat: String(newMeal.value.fat),
+        carb: String(newMeal.value.carb),
+      }
+    ])
+    .select() // 挿入後のデータを取得（optional）
+
+  if (error) {
+    console.error('DB登録エラー:', error)
+    alert('DB登録に失敗しました')
+    return
+  }
+
+  // ② ローカルにも追加（親に emit）
   emit('add', { ...newMeal.value })
+
+  // ③ フォーム閉じる
   emit('close')
 
+  // ④ フォームリセット
   newMeal.value = { name: '', calorie: 0, protein: 0, fat: 0, carb: 0 }
   selectedFood.value = null
 }
@@ -64,13 +89,32 @@ const handleAdd = () => {
       <!-- =============================
            ① 自由入力
       ============================= -->
-      <div v-if="mode === 'manual'">
-        <input v-model="newMeal.name" placeholder="食事名" />
-        <input type="number" v-model="newMeal.calorie" placeholder="kcal" />
-        <input type="number" v-model="newMeal.protein" placeholder="P" />
-        <input type="number" v-model="newMeal.fat" placeholder="F" />
-        <input type="number" v-model="newMeal.carb" placeholder="C" />
-      </div>
+    <div v-if="mode === 'manual'" class="manual-form">
+  <div class="form-group">
+    <label>食事名</label>
+    <input v-model="newMeal.name" placeholder="例: 鶏胸肉" />
+  </div>
+
+  <div class="form-group">
+    <label>カロリー(kcal)</label>
+    <input type="number" v-model="newMeal.calorie" placeholder="例: 165" />
+  </div>
+
+  <div class="form-group">
+    <label>タンパク質(P, g)</label>
+    <input type="number" v-model="newMeal.protein" placeholder="例: 31" />
+  </div>
+
+  <div class="form-group">
+    <label>脂質(F, g)</label>
+    <input type="number" v-model="newMeal.fat" placeholder="例: 3.6" />
+  </div>
+
+  <div class="form-group">
+    <label>炭水化物(C, g)</label>
+    <input type="number" v-model="newMeal.carb" placeholder="例: 0" />
+  </div>
+</div>
 
       <!-- =============================
            ② DB選択
@@ -160,5 +204,16 @@ button {
 .food-item.selected {
   background-color: #b16eb9;
   color: white;
+}
+
+.manual-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manual-form label {
+  font-size: 0.9rem;
+  color: #ccc;
 }
 </style>
