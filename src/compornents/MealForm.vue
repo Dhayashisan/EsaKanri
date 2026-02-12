@@ -9,14 +9,12 @@ import { supabase } from '../utils/supabase'
  */
 const emit = defineEmits(['add', 'close'])
 
-
 /* =============================
    モード切替
    manual: 自由入力
    db: DBから選択
 ============================= */
 const mode = ref('manual')
-
 
 /* =============================
    ① 自由入力用データ
@@ -28,7 +26,6 @@ const newMeal = ref({
   fat: 0,
   carb: 0,
 })
-
 
 /* =============================
    ② DB取得用データ
@@ -59,7 +56,6 @@ const selectFood = (food) => {
   newMeal.value = { ...food }
   quantity.value = 1
 }
-
 
 /* =============================
    食事追加処理
@@ -98,7 +94,6 @@ const handleAdd = async () => {
   quantity.value = 1
 }
 
-
 /* =============================
    自由入力DB登録
 ============================= */
@@ -125,7 +120,6 @@ const addManualMeal = async () => {
     alert('DB登録に失敗しました')
   }
 }
-
 
 /* =============================
    DB選択食事登録
@@ -198,18 +192,13 @@ const addDbMeal = async () => {
           <p v-if="selectedFood && selectedFood.id === food.id">
             {{ food.calorie * quantity }}kcal | P {{ food.protein * quantity }} F
             {{ food.fat * quantity }} C {{ food.carb * quantity }}
+            <input type="number" min="1" v-model.number="quantity" />
           </p>
 
           <!-- 通常表示 -->
           <p v-else>
             {{ food.calorie }}kcal | P {{ food.protein }} F {{ food.fat }} C {{ food.carb }}
           </p>
-        </div>
-
-        <!-- 選択中のみ数量入力 -->
-        <div v-if="selectedFood" class="quantity-box">
-          <label>数量</label>
-          <input type="number" min="1" v-model.number="quantity" />
         </div>
       </div>
 
