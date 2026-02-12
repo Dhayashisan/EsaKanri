@@ -38,7 +38,10 @@ const quantity = ref(1)
  * コンポーネントマウント時にDBから食品リストを取得
  */
 onMounted(async () => {
-  const { data, error } = await supabase.from('foods').select('*')
+  const { data, error } = await supabase
+    .from('foods')
+    .select('*')
+    .order('date', { ascending: false }) // timestamp型なので時間まで含めて降順
 
   if (error) {
     console.error('食品リスト取得エラー:', error)
@@ -102,6 +105,8 @@ const handleAdd = async () => {
  * 自由入力で作成した食事をDBに登録
  */
 const addManualMeal = async () => {
+  const now = new Date() // 現在日時
+
   const { data, error } = await supabase
     .from('foods')
     .insert([
@@ -111,6 +116,7 @@ const addManualMeal = async () => {
         protein: Number(newMeal.value.protein),
         fat: Number(newMeal.value.fat),
         carb: Number(newMeal.value.carb),
+        date: now, // ← ここを追加
       },
     ])
     .select()
@@ -118,20 +124,51 @@ const addManualMeal = async () => {
   if (error) {
     console.error('自由入力DB登録エラー:', error)
     alert('DB登録に失敗しました')
+  } else {
+    // 挿入後の timestamp を反映して更新する場合
+    newMeal.value.date = data[0].date
   }
 }
 
 /* =============================
    DB選択食事登録
 ============================= */
-
-/**
- * DBから選択した食事を登録
- * （必要であれば再DB保存も可能）
- */
 const addDbMeal = async () => {
-  console.log('DBから選択した食事を登録:', newMeal.value)
+  if (!selectedFood.value) return
+
+  const now = new Date()
+
+  // quantity分の栄養計算
+  const updatedMeal = {
+    calorie: Number(selectedFood.value.calorie) * quantity.value,
+    protein: Number(selectedFood.value.protein) * quantity.value,
+    fat: Number(selectedFood.value.fat) * quantity.value,
+    carb: Number(selectedFood.value.carb) * quantity.value,
+    date: now, // timestamp 更新
+  }
+
+  const { data, error } = await supabase
+    .from('foods')
+    .update(updatedMeal)
+    .eq('id', selectedFood.value.id)
+    .select()
+
+  if (error) {
+    console.error('DB選択食事の更新エラー:', error)
+    return
+  }
+
+  // 更新後のデータを反映
+  newMeal.value = {
+    ...selectedFood.value,
+    ...updatedMeal,
+    name: `${selectedFood.value.name} ×${quantity.value}`,
+  }
+
+  console.log('更新成功:', data)
 }
+
+
 </script>
 
 <template>
