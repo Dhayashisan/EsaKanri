@@ -165,51 +165,49 @@ const resetAll = () => {
 </template>
 
 <style scoped>
+<style scoped>
+/* 全体 */
 main {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   background-color: #121212;
   color: #fff;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
-.meal-buttons {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.reset-btn {
-  background: #ff5252;
-  color: white;
-}
-
-.reset-btn:hover {
-  opacity: 0.8;
-}
-
+/* ログイン / コンテンツ wrapper */
 .login {
   width: 100%;
-  max-width: 600px;
-  padding: 20px;
+  max-width: 430px; /* iPhone16 幅に合わせる */
+  padding: 15px;
+  box-sizing: border-box;
 }
 
+/* カード */
 .card {
   background: #1e1e1e;
-  padding: 16px;
+  padding: 12px;
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  font-size: 0.9rem; /* スマホ向けに少し小さく */
 }
 
+/* 入力欄 */
 input {
   padding: 8px;
-  border-radius: 4px;
+  border-radius: 6px;
   border: none;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 0.9rem;
 }
 
+/* ボタン */
 button {
   padding: 10px;
   border-radius: 6px;
@@ -217,12 +215,30 @@ button {
   background: #4caf50;
   color: white;
   cursor: pointer;
+  font-size: 0.9rem;
+  flex: 1;
 }
 
+/* ホバー効果 */
 button:hover {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
+/* リセットボタン */
+.reset-btn {
+  background: #ff5252;
+  color: white;
+}
+
+/* メールボタン群を横並び */
+.meal-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap; /* 画面狭い時に折り返す */
+  margin-bottom: 10px;
+}
+
+/* エラーメッセージ */
 .error {
   border: 2px solid #ff5252;
 }
@@ -232,8 +248,31 @@ button:hover {
   font-weight: bold;
 }
 
+/* ボタン無効時 */
 button:disabled {
   background: gray;
   cursor: not-allowed;
+}
+
+/* レスポンシブ調整（画面幅 430px 以下） */
+@media screen and (max-width: 430px) {
+  .card {
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+
+  input {
+    font-size: 0.85rem;
+    padding: 6px;
+  }
+
+  button {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+
+  .meal-buttons {
+    gap: 6px;
+  }
 }
 </style>
