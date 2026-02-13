@@ -10,8 +10,8 @@ const emit = defineEmits(['save'])
 // カロリー2000〜3400を10刻み
 const calorieOptions = Array.from({ length: 15 }, (_, i) => 2000 + i * 100)
 
-// PF比率 0〜25%
-const ratioOptions = Array.from({ length: 26 }, (_, i) => i)
+// PF比率 0〜30%
+const ratioOptions = Array.from({ length: 31 }, (_, i) => i)
 
 // C比率 0〜70%
 const ratioCarbOptions = Array.from({ length: 71 }, (_, i) => i)
