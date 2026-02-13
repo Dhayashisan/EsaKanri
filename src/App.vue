@@ -167,9 +167,10 @@ const resetAll = () => {
 
             <ul v-if="showMeals">
               <li v-for="(meal, index) in meals" :key="index">
-                {{ meal.name }} - {{ meal.calorie }}kcal | P{{ meal.protein }} F{{ meal.fat }} C{{
-                  meal.carb
+                {{ meal.name }} - {{ meal.calorie }}kcal | P{{
+                  meal.protein.toFixed(1)
                 }}
+                F{{ meal.fat.toFixed(1) }} C{{ meal.carb.toFixed(1) }}
               </li>
             </ul>
           </div>

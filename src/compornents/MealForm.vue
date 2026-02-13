@@ -80,7 +80,7 @@ const handleAdd = async () => {
     // 選択したDB食品の場合、数量分を掛け算
     mealToAdd = {
       ...newMeal.value,
-      name: `${newMeal.value.name} ×${quantity.value}`, //あいい
+      name: newMeal.value.name, 
       calorie: newMeal.value.calorie * quantity.value,
       protein: newMeal.value.protein * quantity.value,
       fat: newMeal.value.fat * quantity.value,
