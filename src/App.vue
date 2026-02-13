@@ -159,7 +159,7 @@ const resetAll = () => {
             :fatGram="fatGram"
             :carbGram="carbGram"
           />
-          <!-- 🔥 ここに追加済み食事リストトグル guruguru-->
+          <!-- 🔥 ここに追加済み食事リストトグル -->
           <div class="added-meals">
             <button @click="showMeals = !showMeals">
               {{ showMeals ? '▲ 登録済み食事を隠す' : '▼ 登録済み食事を表示' }}
@@ -181,7 +181,7 @@ const resetAll = () => {
 </template>
 
 <style scoped>
-/* 全体unko */
+/* 全体 */
 main {
   min-height: 100vh;
   display: flex;

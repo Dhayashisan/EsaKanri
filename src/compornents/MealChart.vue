@@ -1,9 +1,9 @@
 <script setup>
 import { computed } from 'vue'
-import { Chart as ChartJS,  Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
+import { Chart as ChartJS, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
 import { Bar } from 'vue-chartjs'
 
-ChartJS.register( Tooltip, Legend, BarElement, CategoryScale, LinearScale)
+ChartJS.register(Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 const props = defineProps({
   total: Object,
@@ -20,20 +20,12 @@ const data = computed(() => ({
     {
       label: '今日の合計',
       backgroundColor: '#4caf50',
-      data: [
-        props.total.protein,
-        props.total.fat,
-        props.total.carb,
-      ],
+      data: [props.total.protein, props.total.fat, props.total.carb],
     },
     {
       label: '目標',
       backgroundColor: '#2196f3',
-      data: [
-        props.proteinGram,
-        props.fatGram,
-        props.carbGram,
-      ],
+      data: [props.proteinGram, props.fatGram, props.carbGram],
     },
   ],
 }))
