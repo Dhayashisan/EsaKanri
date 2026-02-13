@@ -73,7 +73,7 @@ const handleSave = () => {
     <p>Protein: {{ proteinGram }} g</p>
     <p>Fat: {{ fatGram }} g</p>
     <p>Carb: {{ carbGram }} g</p>
-
+    <p>Carb: {{ carbGram }} g</p>
     <button @click="handleSave" :disabled="isOverRatio">保存</button>
   </div>
 </template>
