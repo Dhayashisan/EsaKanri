@@ -167,10 +167,10 @@ const resetAll = () => {
 
             <ul v-if="showMeals">
               <li v-for="(meal, index) in meals" :key="index">
-                {{ meal.name }} - {{ meal.calorie }}kcal | P{{
-                  meal.protein.toFixed(1)
+                {{ meal.name }} - {{ meal.calorie }}kcal | P{{ meal.protein.toFixed(1) }} F{{
+                  meal.fat.toFixed(1)
                 }}
-                F{{ meal.fat.toFixed(1) }} C{{ meal.carb.toFixed(1) }}
+                C{{ meal.carb.toFixed(1) }}
               </li>
             </ul>
           </div>
@@ -188,49 +188,52 @@ main {
   justify-content: center;
   background-color: #121212;
   color: #fff;
-  padding: 10px;
+  padding: 8px;
   box-sizing: border-box;
+  font-size: 0.9rem; /* 基本フォントサイズをスマホ向けに調整 */
 }
 
 /* ログイン / コンテンツ wrapper */
 .login {
   width: 100%;
-  max-width: 430px; /* iPhone16 幅に合わせる */
-  padding: 15px;
+  max-width: 430px; /* iPhone16幅に対応 */
+  padding: 12px;
   box-sizing: border-box;
 }
 
 /* カード */
 .card {
   background: #1e1e1e;
-  padding: 12px;
+  padding: 10px;
   border-radius: 8px;
   margin-bottom: 16px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 0.9rem; /* スマホ向けに少し小さく */
+  font-size: 0.85rem;
 }
 
 /* 入力欄 */
 input {
-  padding: 8px;
+  padding: 6px 8px;
   border-radius: 6px;
   border: none;
   width: 100%;
   box-sizing: border-box;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  color: #fff;
+  background: #1e1e1e;
 }
 
 /* ボタン */
 button {
-  padding: 10px;
+  padding: 8px;
   border-radius: 6px;
   border: none;
   background: #4caf50;
   color: white;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   flex: 1;
 }
 
@@ -242,18 +245,23 @@ button:hover {
 /* リセットボタン */
 .reset-btn {
   background: #ff5252;
-  color: white;
 }
 
 /* メールボタン群を横並び */
 .meal-buttons {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap; /* 画面狭い時に折り返す */
+  gap: 6px;
+  flex-wrap: wrap;
   margin-bottom: 10px;
 }
 
-/* エラーメッセージ */
+/* ボタン無効時 */
+button:disabled {
+  background: gray;
+  cursor: not-allowed;
+}
+
+/* エラー表示 */
 .error {
   border: 2px solid #ff5252;
 }
@@ -263,34 +271,7 @@ button:hover {
   font-weight: bold;
 }
 
-/* ボタン無効時 */
-button:disabled {
-  background: gray;
-  cursor: not-allowed;
-}
-
-/* レスポンシブ調整（画面幅 430px 以下） */
-@media screen and (max-width: 430px) {
-  .card {
-    padding: 10px;
-    font-size: 0.85rem;
-  }
-
-  input {
-    font-size: 0.85rem;
-    padding: 6px;
-  }
-
-  button {
-    font-size: 0.85rem;
-    padding: 8px;
-  }
-
-  .meal-buttons {
-    gap: 6px;
-  }
-}
-
+/* 登録済み食事リスト */
 .added-meals {
   margin-top: 12px;
 }
@@ -308,5 +289,35 @@ button:disabled {
 .added-meals li {
   padding: 6px 8px;
   border-bottom: 1px solid #333;
+}
+
+/* レスポンシブ調整 */
+@media screen and (max-width: 430px) {
+  .card {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  input {
+    font-size: 0.85rem;
+    padding: 6px;
+  }
+
+  button {
+    font-size: 0.85rem;
+    padding: 6px;
+  }
+
+  .meal-buttons {
+    gap: 4px;
+  }
+
+  .added-meals ul {
+    padding-left: 12px;
+  }
+
+  .added-meals li {
+    padding: 4px 6px;
+  }
 }
 </style>
