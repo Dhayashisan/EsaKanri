@@ -2,6 +2,9 @@
 import { ref, onMounted } from 'vue'
 import { supabase } from '../utils/supabase'
 
+// 数量1〜10個まで選べるようにする
+const quantityOptions = Array.from({ length: 10 }, (_, i) => i + 1)
+
 /**
  * イベント emit 定義
  * @event add - 食事追加時
@@ -80,7 +83,7 @@ const handleAdd = async () => {
     // 選択したDB食品の場合、数量分を掛け算
     mealToAdd = {
       ...newMeal.value,
-      name: newMeal.value.name, 
+      name: newMeal.value.name,
       calorie: newMeal.value.calorie * quantity.value,
       protein: newMeal.value.protein * quantity.value,
       fat: newMeal.value.fat * quantity.value,
@@ -138,7 +141,6 @@ const addDbMeal = async () => {
 
   const now = new Date()
 
-
   const updatedMeal = {
     date: now, // timestamp 更新
   }
@@ -163,8 +165,6 @@ const addDbMeal = async () => {
 
   console.log('更新成功:', data)
 }
-
-
 </script>
 
 <template>
@@ -225,7 +225,9 @@ const addDbMeal = async () => {
           <p v-if="selectedFood && selectedFood.id === food.id">
             {{ food.calorie * quantity }}kcal | P {{ (food.protein * quantity).toFixed(1) }} F
             {{ (food.fat * quantity).toFixed(1) }} C {{ (food.carb * quantity).toFixed(1) }}
-            <input type="number" min="1" v-model.number="quantity" />
+            <select v-model.number="quantity">
+              <option v-for="n in quantityOptions" :key="n" :value="n">×{{ n }}</option>
+            </select>
           </p>
 
           <!-- 通常表示 -->
