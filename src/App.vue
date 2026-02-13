@@ -181,7 +181,7 @@ const resetAll = () => {
 </template>
 
 <style scoped>
-/* 全体 */
+/* 全体unko */
 main {
   min-height: 100vh;
   display: flex;
