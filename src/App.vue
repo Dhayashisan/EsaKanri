@@ -183,34 +183,53 @@ const resetAll = () => {
 <style scoped>
 /* 全体 */
 main {
-  min-height: 100vh;
+  min-height: 100dvh; /* ←変更 */
   display: flex;
   justify-content: center;
   background-color: #121212;
   color: #fff;
-  padding: 8px;
+
+  padding-top: 12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+
   box-sizing: border-box;
-  font-size: 0.9rem; /* 基本フォントサイズをスマホ向けに調整 */
+  font-size: 0.95rem;
 }
 
 /* ログイン / コンテンツ wrapper */
 .login {
   width: 100%;
-  max-width: 430px; /* iPhone16幅に対応 */
+  max-width: 430px;
   padding: 12px;
   box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  max-height: 100dvh;
+  overflow-y: auto;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  background: #121212;
+  z-index: 10;
+  padding-bottom: 8px;
 }
 
 /* カード */
 .card {
   background: #1e1e1e;
-  padding: 10px;
-  border-radius: 8px;
+  padding: 14px;
+  border-radius: 12px;
   margin-bottom: 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 0.85rem;
+  gap: 8px;
 }
 
 /* 入力欄 */
@@ -227,13 +246,13 @@ input {
 
 /* ボタン */
 button {
-  padding: 8px;
-  border-radius: 6px;
+  padding: 12px;
+  border-radius: 10px;
   border: none;
   background: #4caf50;
   color: white;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   flex: 1;
 }
 

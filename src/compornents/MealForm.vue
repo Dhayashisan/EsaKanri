@@ -267,20 +267,27 @@ const addDbMeal = async () => {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
+
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-end;
 }
 
 .panel {
   background: #1e1e1e;
-  width: 90%;
-  max-width: 420px;
+  width: 100%;
+  max-width: 430px;
+
+  max-height: 85dvh;
+  overflow-y: auto;
+
   padding: 20px;
-  border-radius: 10px;
+
+  border-radius: 16px 16px 0 0;
+
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .tabs {

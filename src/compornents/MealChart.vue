@@ -44,5 +44,13 @@ const options = {
 </script>
 
 <template>
-  <Bar :data="data" :options="options" />
+  <div class="chart-container">
+    <Bar :data="data" :options="options" />
+  </div>
 </template>
+
+<style scoped>
+.chart-container {
+  height: 220px;
+}
+</style>

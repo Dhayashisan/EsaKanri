@@ -82,11 +82,15 @@ const handleSave = () => {
 .card {
   background: #1e1e1e;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 20px;
+
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+
+  max-height: 70dvh;
+  overflow-y: auto;
 }
 
 input {
