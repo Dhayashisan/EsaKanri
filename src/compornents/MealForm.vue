@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { supabase } from '../utils/supabase'
 
 // 数量1〜10個まで選べるようにする
@@ -59,9 +59,26 @@ onMounted(async () => {
  */
 const selectFood = (food) => {
   selectedFood.value = food
-  newMeal.value = { ...food }
   quantity.value = 1
+
+  newMeal.value = {
+    ...food,
+    name: `${food.name} ×1`,
+  }
 }
+
+watch(quantity, (newQuantity) => {
+  if (!selectedFood.value) return
+
+  newMeal.value = {
+    ...selectedFood.value,
+    name: `${selectedFood.value.name} ×${newQuantity}`,
+    calorie: selectedFood.value.calorie * newQuantity,
+    protein: selectedFood.value.protein * newQuantity,
+    fat: selectedFood.value.fat * newQuantity,
+    carb: selectedFood.value.carb * newQuantity,
+  }
+})
 
 /* =============================
    食事追加処理
@@ -82,12 +99,12 @@ const handleAdd = async () => {
 
     // 選択したDB食品の場合、数量分を掛け算
     mealToAdd = {
-      ...newMeal.value,
-      name: newMeal.value.name,
-      calorie: newMeal.value.calorie * quantity.value,
-      protein: newMeal.value.protein * quantity.value,
-      fat: newMeal.value.fat * quantity.value,
-      carb: newMeal.value.carb * quantity.value,
+      ...selectedFood.value,
+      name: `${selectedFood.value.name} ×${quantity.value}`,
+      calorie: selectedFood.value.calorie * quantity.value,
+      protein: selectedFood.value.protein * quantity.value,
+      fat: selectedFood.value.fat * quantity.value,
+      carb: selectedFood.value.carb * quantity.value,
     }
   }
 
@@ -225,7 +242,8 @@ const addDbMeal = async () => {
           <p v-if="selectedFood && selectedFood.id === food.id">
             {{ food.calorie * quantity }}kcal | P {{ (food.protein * quantity).toFixed(1) }} F
             {{ (food.fat * quantity).toFixed(1) }} C {{ (food.carb * quantity).toFixed(1) }}
-            <select v-model.number="quantity">
+
+            <select v-model.number="quantity" @click.stop>
               <option v-for="n in quantityOptions" :key="n" :value="n">×{{ n }}</option>
             </select>
           </p>
