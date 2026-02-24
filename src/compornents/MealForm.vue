@@ -266,11 +266,18 @@ const addDbMeal = async () => {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0,0,0,0.6);
 
   display: flex;
   justify-content: center;
-  align-items: flex-end;
+  align-items: flex-start;
+
+  padding-top: 60px;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+
+  z-index: 9999;
 }
 
 .panel {
@@ -278,16 +285,19 @@ const addDbMeal = async () => {
   width: 100%;
   max-width: 430px;
 
-  max-height: 85dvh;
+  max-height: 80dvh;
   overflow-y: auto;
 
   padding: 20px;
 
-  border-radius: 16px 16px 0 0;
+  border-radius: 16px;
 
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  /* ↓ 影でモーダル感 */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 
 .tabs {
