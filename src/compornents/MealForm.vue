@@ -87,31 +87,12 @@ watch(quantity, (newQuantity) => {
 /**
  * 食事追加ボタン押下時の処理
  */
-const handleAdd = async () => {
+const handleAdd = () => {
   if (!newMeal.value.name) return
 
-  let mealToAdd = { ...newMeal.value }
-
-  if (mode.value === 'manual') {
-    await addManualMeal()
-  } else if (mode.value === 'db') {
-    await addDbMeal()
-
-    // 選択したDB食品の場合、数量分を掛け算
-    mealToAdd = {
-      ...selectedFood.value,
-      name: `${selectedFood.value.name} ×${quantity.value}`,
-      calorie: selectedFood.value.calorie * quantity.value,
-      protein: selectedFood.value.protein * quantity.value,
-      fat: selectedFood.value.fat * quantity.value,
-      carb: selectedFood.value.carb * quantity.value,
-    }
-  }
-
-  emit('add', mealToAdd)
+  emit('add', { ...newMeal.value })
   emit('close')
 
-  // 入力値リセット
   newMeal.value = { name: '', calorie: 0, protein: 0, fat: 0, carb: 0 }
   selectedFood.value = null
   quantity.value = 1
@@ -121,67 +102,9 @@ const handleAdd = async () => {
    自由入力DB登録
 ============================= */
 
-/**
- * 自由入力で作成した食事をDBに登録
- */
-const addManualMeal = async () => {
-  const now = new Date() // 現在日時
 
-  const { data, error } = await supabase
-    .from('foods')
-    .insert([
-      {
-        name: newMeal.value.name,
-        calorie: Number(newMeal.value.calorie),
-        protein: Number(newMeal.value.protein),
-        fat: Number(newMeal.value.fat),
-        carb: Number(newMeal.value.carb),
-        date: now, // ← ここを追加
-      },
-    ])
-    .select()
 
-  if (error) {
-    console.error('自由入力DB登録エラー:', error)
-    alert('DB登録に失敗しました')
-  } else {
-    // 挿入後の timestamp を反映して更新する場合
-    newMeal.value.date = data[0].date
-  }
-}
 
-/* =============================
-   DB選択食事登録
-============================= */
-const addDbMeal = async () => {
-  if (!selectedFood.value) return
-
-  const now = new Date()
-
-  const updatedMeal = {
-    date: now, // timestamp 更新
-  }
-
-  const { data, error } = await supabase
-    .from('foods')
-    .update(updatedMeal)
-    .eq('id', selectedFood.value.id)
-    .select()
-
-  if (error) {
-    console.error('DB選択食事の更新エラー:', error)
-    return
-  }
-
-  // 更新後のデータを反映
-  newMeal.value = {
-    ...selectedFood.value,
-    ...updatedMeal,
-    name: `${selectedFood.value.name} ×${quantity.value}`,
-  }
-
-  console.log('更新成功:', data)
-}
 </script>
 
 <template>

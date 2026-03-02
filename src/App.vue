@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { supabase } from './utils/supabase'
 import GoalSetting from './compornents/GoalSetting.vue'
 import MealForm from './compornents/MealForm.vue'
 const username = ref('')
@@ -35,7 +36,20 @@ const enterName = () => {
   isEntered.value = true
 }
 
-onMounted(() => {
+const loadMeals = async () => {
+
+  const { data, error } = await supabase
+    .from('meals')
+    .select('*')
+    .eq('user_id', username.value)
+    .order('date', { ascending: false })
+
+  if (!error) {
+    meals.value = data
+  }
+}
+
+onMounted(async () => {
   const savedName = localStorage.getItem('username')
   if (savedName) {
     username.value = savedName
@@ -45,8 +59,7 @@ onMounted(() => {
   const savedGoal = localStorage.getItem('goal')
   if (savedGoal) goal.value = JSON.parse(savedGoal)
 
-  const savedMeals = localStorage.getItem('meals')
-  if (savedMeals) meals.value = JSON.parse(savedMeals)
+  await loadMeals()
 })
 
 /* =============================
@@ -81,10 +94,29 @@ const newMeal = ref({
   carb: 0,
 })
 
-const addMeal = (meal) => {
-  if (!meal || !meal.name) return
-  meals.value.push({ ...meal })
-  //localStorage.setItem('meals', JSON.stringify(meals.value))
+const addMeal = async (meal) => {
+
+  const { data, error } = await supabase
+    .from('meals')
+    .insert([
+      {
+        user_id: username.value,
+        name: meal.name,
+        calorie: meal.calorie,
+        protein: meal.protein,
+        fat: meal.fat,
+        carb: meal.carb,
+        date: new Date(),
+      }
+    ])
+    .select()
+
+  if (error) {
+    console.error(error)
+    return
+  }
+
+  meals.value.unshift(data[0])
 }
 
 const total = computed(() => {
@@ -100,13 +132,14 @@ const total = computed(() => {
   )
 })
 
-const resetAll = () => {
-  // 食事リストをリセット → total も自動で 0 になる
-  meals.value = []
-  localStorage.removeItem('meals')
+const resetAll = async () => {
 
-  // 新規入力フォームもリセット
-  newMeal.value = { name: '', calorie: 0, protein: 0, fat: 0, carb: 0 }
+  await supabase
+    .from('meals')
+    .delete()
+    .eq('user_id', username.value)
+
+  meals.value = []
 }
 </script>
 
