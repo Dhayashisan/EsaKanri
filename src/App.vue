@@ -216,19 +216,18 @@ const resetAll = async () => {
 <style scoped>
 /* 全体 */
 main {
-  min-height: 100dvh; /* ←変更 */
+  height: 100dvh;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
+
   background-color: #121212;
   color: #fff;
 
-  padding-top: 12px;
-  padding-left: 12px;
-  padding-right: 12px;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
-
+  padding: 10px;
   box-sizing: border-box;
-  font-size: 0.95rem;
+
+  overflow: hidden; /* ←追加 */
 }
 
 /* ログイン / コンテンツ wrapper */
@@ -240,10 +239,10 @@ main {
 
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 
-  max-height: 100dvh;
-  overflow-y: auto;
+  height: 100dvh;   /* ← max-height をやめる */
+  overflow: hidden; /* ← スクロール禁止 */
 }
 
 .header {
@@ -257,12 +256,26 @@ main {
 /* カード */
 .card {
   background: #1e1e1e;
-  padding: 14px;
+  padding: 10px;        /* ←変更 */
   border-radius: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 10px;  /* ←変更 */
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.card {
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+h2 {
+  font-size: 1rem;
+  margin: 6px 0;
+}
+
+button {
+  padding: 8px;
 }
 
 /* 入力欄 */
@@ -279,7 +292,7 @@ input {
 
 /* ボタン */
 button {
-  padding: 12px;
+  padding: 8px;  /* ←変更 */
   border-radius: 10px;
   border: none;
   background: #4caf50;
@@ -329,13 +342,8 @@ button:disabled {
 }
 
 .added-meals ul {
-  max-height: 200px;
+  max-height: 120px;
   overflow-y: auto;
-  padding-left: 16px;
-  margin-top: 8px;
-  background: #1e1e1e;
-  border-radius: 6px;
-  list-style: none;
 }
 
 .added-meals li {
