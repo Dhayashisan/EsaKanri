@@ -84,11 +84,50 @@ watch(quantity, (newQuantity) => {
    食事追加処理
 ============================= */
 
+const saveFood = async () => {
+
+  // ① 既存チェック
+  const { data } = await supabase
+    .from('foods')
+    .select('id')
+    .eq('name', newMeal.value.name)
+    .limit(1)
+
+  // ② すでに存在するなら登録しない
+  if (data && data.length > 0) {
+    return
+  }
+
+  // ③ 存在しない場合だけ登録
+  const { error } = await supabase
+    .from('foods')
+    .insert([
+      {
+        name: newMeal.value.name,
+        calorie: newMeal.value.calorie,
+        protein: newMeal.value.protein,
+        fat: newMeal.value.fat,
+        carb: newMeal.value.carb,
+        date: new Date().toISOString()
+      }
+    ])
+
+  if (error) {
+    console.error('foods登録エラー:', error)
+  }
+}
+
+
 /**
  * 食事追加ボタン押下時の処理
  */
-const handleAdd = () => {
+const handleAdd = async () => {
   if (!newMeal.value.name) return
+
+  // 自由入力の場合のみ foods に保存
+  if (mode.value === 'manual') {
+    await saveFood()
+  }
 
   emit('add', { ...newMeal.value })
   emit('close')
@@ -97,10 +136,6 @@ const handleAdd = () => {
   selectedFood.value = null
   quantity.value = 1
 }
-
-/* =============================
-   自由入力DB登録
-============================= */
 
 
 
