@@ -360,7 +360,7 @@ button:disabled {
   border-bottom: 1px solid #333;
 }
 
-/* レスポンシブ調整test */
+/* レスポンシブ調整 */
 @media screen and (max-width: 430px) {
   .card {
     padding: 8px;
