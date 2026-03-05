@@ -37,7 +37,6 @@ const enterName = () => {
 }
 
 const loadMeals = async () => {
-
   const { data, error } = await supabase
     .from('meals')
     .select('*')
@@ -95,7 +94,6 @@ const newMeal = ref({
 })
 
 const addMeal = async (meal) => {
-
   const { data, error } = await supabase
     .from('meals')
     .insert([
@@ -107,7 +105,7 @@ const addMeal = async (meal) => {
         fat: meal.fat,
         carb: meal.carb,
         date: new Date(),
-      }
+      },
     ])
     .select()
 
@@ -133,13 +131,20 @@ const total = computed(() => {
 })
 
 const resetAll = async () => {
-
-  await supabase
-    .from('meals')
-    .delete()
-    .eq('user_id', username.value)
+  await supabase.from('meals').delete().eq('user_id', username.value)
 
   meals.value = []
+}
+
+const deleteMeal = async (id) => {
+  const { error } = await supabase.from('meals').delete().eq('id', id)
+
+  if (error) {
+    console.error(error)
+    return
+  }
+
+  meals.value = meals.value.filter((meal) => meal.id !== id)
 }
 </script>
 
@@ -199,11 +204,15 @@ const resetAll = async () => {
             </button>
 
             <ul v-if="showMeals">
-              <li v-for="(meal, index) in meals" :key="index">
-                {{ meal.name }} - {{ meal.calorie }}kcal | P{{ meal.protein.toFixed(1) }} F{{
-                  meal.fat.toFixed(1)
-                }}
-                C{{ meal.carb.toFixed(1) }}
+              <li v-for="meal in meals" :key="meal.id" class="meal-item">
+                <span>
+                  {{ meal.name }} - {{ meal.calorie }}kcal | P{{ meal.protein.toFixed(1) }} F{{
+                    meal.fat.toFixed(1)
+                  }}
+                  C{{ meal.carb.toFixed(1) }}
+                </span>
+
+                <button class="delete-btn" @click="deleteMeal(meal.id)">削除</button>
               </li>
             </ul>
           </div>
@@ -241,7 +250,7 @@ main {
   flex-direction: column;
   gap: 10px;
 
-  height: 100dvh;   /* ← max-height をやめる */
+  height: 100dvh; /* ← max-height をやめる */
   overflow: hidden; /* ← スクロール禁止 */
 }
 
@@ -256,9 +265,9 @@ main {
 /* カード */
 .card {
   background: #1e1e1e;
-  padding: 10px;        /* ←変更 */
+  padding: 10px; /* ←変更 */
   border-radius: 12px;
-  margin-bottom: 10px;  /* ←変更 */
+  margin-bottom: 10px; /* ←変更 */
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -292,7 +301,7 @@ input {
 
 /* ボタン */
 button {
-  padding: 8px;  /* ←変更 */
+  padding: 8px; /* ←変更 */
   border-radius: 10px;
   border: none;
   background: #4caf50;
@@ -342,7 +351,7 @@ button:disabled {
 }
 
 .added-meals ul {
-  max-height: 120px;
+  max-height: 40vh;
   overflow-y: auto;
 }
 
@@ -379,5 +388,17 @@ button:disabled {
   .added-meals li {
     padding: 4px 6px;
   }
+}
+
+.meal-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.delete-btn {
+  background: #ff5252;
+  padding: 4px 8px;
+  font-size: 0.8rem;
 }
 </style>
