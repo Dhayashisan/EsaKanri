@@ -239,7 +239,7 @@ main {
   overflow: hidden; /* ←追加 */
 }
 
-/* ログイン / コンテンツ wrapper */
+/* ログイン / コンテンツ wrapper rr*/
 .login {
   width: 100%;
   max-width: 430px;
