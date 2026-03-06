@@ -2,26 +2,44 @@
 import { ref, onMounted, watch } from 'vue'
 import { supabase } from '../utils/supabase'
 
-// 数量1〜10個まで選べるようにする
-const quantityOptions = Array.from({ length: 10 }, (_, i) => i + 1)
+/* =====================================================
+   定数
+===================================================== */
 
 /**
- * イベント emit 定義
- * @event add - 食事追加時
- * @event close - パネル閉じる
+ * 数量選択（1〜10）
+ * @type {number[]}
+ */
+const quantityOptions = Array.from({ length: 10 }, (_, i) => i + 1)
+
+/* =====================================================
+   emit
+===================================================== */
+
+/**
+ * @event add 食事追加
+ * @event close モーダル閉じる
  */
 const emit = defineEmits(['add', 'close'])
 
-/* =============================
-   モード切替
-   manual: 自由入力
-   db: DBから選択
-============================= */
+/* =====================================================
+   UI状態
+===================================================== */
+
+/**
+ * モード
+ * manual : 手入力
+ * db     : DBから選択
+ */
 const mode = ref('manual')
 
-/* =============================
-   ① 自由入力用データ
-============================= */
+/* =====================================================
+   食事入力データ
+===================================================== */
+
+/**
+ * 入力中の食事
+ */
 const newMeal = ref({
   name: '',
   calorie: 0,
@@ -30,32 +48,49 @@ const newMeal = ref({
   carb: 0,
 })
 
-/* =============================
-   ② DB取得用データ
-============================= */
+/* =====================================================
+   DB食品
+===================================================== */
+
+/** DB食品一覧 */
 const foods = ref([])
+
+/** 選択食品 */
 const selectedFood = ref(null)
+
+/** 数量 */
 const quantity = ref(1)
 
+/* =====================================================
+   初期処理
+===================================================== */
+
 /**
- * コンポーネントマウント時にDBから食品リストを取得
+ * DBから食品一覧取得
  */
-onMounted(async () => {
+const fetchFoods = async () => {
   const { data, error } = await supabase
     .from('foods')
     .select('*')
-    .order('date', { ascending: false }) // timestamp型なので時間まで含めて降順
+    .order('date', { ascending: false })
 
   if (error) {
-    console.error('食品リスト取得エラー:', error)
-  } else {
-    foods.value = data
+    console.error('食品取得エラー', error)
+    return
   }
-})
+
+  foods.value = data
+}
+
+onMounted(fetchFoods)
+
+/* =====================================================
+   食品選択
+===================================================== */
 
 /**
- * 食品を選択
- * @param {Object} food - 選択された食品
+ * 食品選択
+ * @param {Object} food
  */
 const selectFood = (food) => {
   selectedFood.value = food
@@ -67,64 +102,90 @@ const selectFood = (food) => {
   }
 }
 
-watch(quantity, (newQuantity) => {
+/* =====================================================
+   数量変更
+===================================================== */
+
+/**
+ * 数量変更時の栄養再計算
+ */
+const updateNutrition = () => {
   if (!selectedFood.value) return
 
+  const food = selectedFood.value
+  const q = quantity.value
+
   newMeal.value = {
-    ...selectedFood.value,
-    name: `${selectedFood.value.name} ×${newQuantity}`,
-    calorie: selectedFood.value.calorie * newQuantity,
-    protein: selectedFood.value.protein * newQuantity,
-    fat: selectedFood.value.fat * newQuantity,
-    carb: selectedFood.value.carb * newQuantity,
-  }
-})
-
-/* =============================
-   食事追加処理
-============================= */
-
-const saveFood = async () => {
-
-  // ① 既存チェック
-  const { data } = await supabase
-    .from('foods')
-    .select('id')
-    .eq('name', newMeal.value.name)
-    .limit(1)
-
-  // ② すでに存在するなら登録しない
-  if (data && data.length > 0) {
-    return
-  }
-
-  // ③ 存在しない場合だけ登録
-  const { error } = await supabase
-    .from('foods')
-    .insert([
-      {
-        name: newMeal.value.name,
-        calorie: newMeal.value.calorie,
-        protein: newMeal.value.protein,
-        fat: newMeal.value.fat,
-        carb: newMeal.value.carb,
-        date: new Date().toISOString()
-      }
-    ])
-
-  if (error) {
-    console.error('foods登録エラー:', error)
+    ...food,
+    name: `${food.name} ×${q}`,
+    calorie: food.calorie * q,
+    protein: food.protein * q,
+    fat: food.fat * q,
+    carb: food.carb * q,
   }
 }
 
+watch(quantity, updateNutrition)
+
+/* =====================================================
+   foodsテーブル保存
+===================================================== */
 
 /**
- * 食事追加ボタン押下時の処理
+ * foodsテーブルに保存
+ * 同じ名前の食品が存在する場合は登録しない
+ */
+const saveFood = async () => {
+  const { data } = await supabase.from('foods').select('id').eq('name', newMeal.value.name).limit(1)
+
+  if (data && data.length > 0) return
+
+  const { error } = await supabase.from('foods').insert([
+    {
+      name: newMeal.value.name,
+      calorie: newMeal.value.calorie,
+      protein: newMeal.value.protein,
+      fat: newMeal.value.fat,
+      carb: newMeal.value.carb,
+      date: new Date().toISOString(),
+    },
+  ])
+
+  if (error) {
+    console.error('foods登録エラー', error)
+  }
+}
+
+/* =====================================================
+   リセット
+===================================================== */
+
+/**
+ * 入力フォーム初期化
+ */
+const resetForm = () => {
+  newMeal.value = {
+    name: '',
+    calorie: 0,
+    protein: 0,
+    fat: 0,
+    carb: 0,
+  }
+
+  selectedFood.value = null
+  quantity.value = 1
+}
+
+/* =====================================================
+   食事追加
+===================================================== */
+
+/**
+ * 食事追加処理
  */
 const handleAdd = async () => {
   if (!newMeal.value.name) return
 
-  // 自由入力の場合のみ foods に保存
   if (mode.value === 'manual') {
     await saveFood()
   }
@@ -132,14 +193,8 @@ const handleAdd = async () => {
   emit('add', { ...newMeal.value })
   emit('close')
 
-  newMeal.value = { name: '', calorie: 0, protein: 0, fat: 0, carb: 0 }
-  selectedFood.value = null
-  quantity.value = 1
+  resetForm()
 }
-
-
-
-
 </script>
 
 <template>
@@ -224,7 +279,7 @@ const handleAdd = async () => {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
 
   display: flex;
   justify-content: center;
@@ -255,7 +310,7 @@ const handleAdd = async () => {
   gap: 12px;
 
   /* ↓ 影でモーダル感 */
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 
 .tabs {

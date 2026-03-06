@@ -1,35 +1,100 @@
 <script setup>
 import { computed } from 'vue'
 
+/**
+ * GoalSetting.vue
+ * -----------------------------
+ * 1日の摂取カロリーとPFC比率を設定するコンポーネント
+ *
+ * 機能
+ * ・カロリー設定
+ * ・PFC比率設定
+ * ・比率バリデーション（合計100%以内）
+ * ・PFCグラム自動計算
+ *
+ * emit
+ * save : 設定保存
+ */
+
+/* =============================
+   Props / Emits
+============================= */
+
+/**
+ * @typedef {Object} Goal
+ * @property {number} calorie
+ * @property {number} ratioProtein
+ * @property {number} ratioFat
+ * @property {number} ratioCarb
+ */
+
 const props = defineProps({
-  goal: Object,
+  goal: {
+    type: Object,
+    required: true,
+  },
 })
 
 const emit = defineEmits(['save'])
 
-// カロリー2000〜3400を10刻み
-const calorieOptions = Array.from({ length: 15 }, (_, i) => 2000 + i * 100)
+/* =============================
+   定数
+============================= */
 
-// PF比率 0〜30%
-const ratioOptions = Array.from({ length: 31 }, (_, i) => i)
+const CALORIE_START = 2000
+const CALORIE_STEP = 100
+const CALORIE_COUNT = 15
 
-// C比率 0〜70%
-const ratioCarbOptions = Array.from({ length: 71 }, (_, i) => i)
+const PROTEIN_KCAL = 4
+const CARB_KCAL = 4
+const FAT_KCAL = 9
+
+/* =============================
+   Utility
+============================= */
+
+/**
+ * 数値配列生成
+ * @param {number} length
+ * @param {(index:number)=>number} fn
+ * @returns {number[]}
+ */
+const createArray = (length, fn) => Array.from({ length }, (_, i) => fn(i))
+
+/**
+ * PFCグラム計算
+ * @param {number} calorie
+ * @param {number} ratio
+ * @param {number} kcal
+ * @returns {number}
+ */
+const calcGram = (calorie, ratio, kcal) => Math.round((calorie * ratio) / 100 / kcal)
+
+/* =============================
+   セレクトボックスデータ
+============================= */
+
+const calorieOptions = createArray(CALORIE_COUNT, (i) => CALORIE_START + i * CALORIE_STEP)
+
+const ratioOptions = createArray(31, (i) => i)
+const ratioCarbOptions = createArray(71, (i) => i)
 
 /* =============================
    PFC自動計算
 ============================= */
+
 const proteinGram = computed(() =>
-  Math.round((props.goal.calorie * props.goal.ratioProtein) / 100 / 4),
+  calcGram(props.goal.calorie, props.goal.ratioProtein, PROTEIN_KCAL),
 )
 
-const fatGram = computed(() => Math.round((props.goal.calorie * props.goal.ratioFat) / 100 / 9))
+const fatGram = computed(() => calcGram(props.goal.calorie, props.goal.ratioFat, FAT_KCAL))
 
-const carbGram = computed(() => Math.round((props.goal.calorie * props.goal.ratioCarb) / 100 / 4))
+const carbGram = computed(() => calcGram(props.goal.calorie, props.goal.ratioCarb, CARB_KCAL))
 
 /* =============================
    バリデーション
 ============================= */
+
 const ratioTotal = computed(
   () =>
     Number(props.goal.ratioProtein) + Number(props.goal.ratioFat) + Number(props.goal.ratioCarb),
@@ -37,6 +102,9 @@ const ratioTotal = computed(
 
 const isOverRatio = computed(() => ratioTotal.value > 100)
 
+/**
+ * 保存処理
+ */
 const handleSave = () => {
   if (isOverRatio.value) return
   emit('save')
@@ -73,7 +141,7 @@ const handleSave = () => {
     <p>Protein: {{ proteinGram }} g</p>
     <p>Fat: {{ fatGram }} g</p>
     <p>Carb: {{ carbGram }} g</p>
-    <p>Carb: {{ carbGram }} g</p>
+
     <button @click="handleSave" :disabled="isOverRatio">保存</button>
   </div>
 </template>

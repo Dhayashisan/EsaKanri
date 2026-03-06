@@ -1,41 +1,132 @@
 <script setup>
+/**
+ * App.vue
+ *
+ * 食事管理アプリのメインコンポーネント
+ *
+ * 機能
+ * - ユーザーログイン（簡易）
+ * - 目標カロリー / PFC設定
+ * - 食事登録
+ * - 食事削除
+ * - 今日の合計計算
+ * - グラフ表示
+ */
+
 import { ref, onMounted, computed } from 'vue'
 import { supabase } from './utils/supabase'
+
 import GoalSetting from './compornents/GoalSetting.vue'
 import MealForm from './compornents/MealForm.vue'
-const username = ref('')
-const isEntered = ref(false)
 import MealChart from './compornents/MealChart.vue'
 
-// 目標設定表示フラグ
+/* ========================================
+   型定義（JSDoc）
+======================================== */
+
+/**
+ * @typedef {Object} Meal
+ * @property {number} id
+ * @property {string} name
+ * @property {number} calorie
+ * @property {number} protein
+ * @property {number} fat
+ * @property {number} carb
+ * @property {string} user_id
+ * @property {string} date
+ */
+
+/**
+ * @typedef {Object} Goal
+ * @property {number} calorie
+ * @property {number} ratioProtein
+ * @property {number} ratioFat
+ * @property {number} ratioCarb
+ */
+
+/* ========================================
+   ユーザー状態
+======================================== */
+
+const username = ref('')
+const isEntered = ref(false)
+
+/**
+ * ユーザー名入力
+ * localStorageに保存してログイン状態にする
+ */
+const enterName = () => {
+  if (!username.value) return
+
+  localStorage.setItem('username', username.value)
+  isEntered.value = true
+}
+
+/* ========================================
+   UI表示管理
+======================================== */
+
 const showGoalSetting = ref(false)
-// トグル処理
+const showMealForm = ref(false)
+const showMeals = ref(false)
+
+/** 目標設定トグル */
 const toggleGoalSetting = () => {
   showGoalSetting.value = !showGoalSetting.value
 }
 
-const showMealForm = ref(false)
-const showMeals = ref(false) // トグル表示用
-
+/** 食事フォームトグル */
 const toggleMealForm = () => {
   showMealForm.value = !showMealForm.value
 }
 
-// 保存時に閉じる
+/* ========================================
+   目標設定
+======================================== */
+
+/** @type {import('vue').Ref<Goal>} */
+const goal = ref({
+  calorie: 2000,
+  ratioProtein: 30,
+  ratioFat: 20,
+  ratioCarb: 50,
+})
+
+/**
+ * 目標保存
+ */
 const saveGoal = () => {
   localStorage.setItem('goal', JSON.stringify(goal.value))
   alert('目標を保存しました')
   showGoalSetting.value = false
 }
-/* =============================
-   ログイン処理
-============================= */
-const enterName = () => {
-  if (!username.value) return
-  localStorage.setItem('username', username.value)
-  isEntered.value = true
-}
 
+/* ========================================
+   PFC自動計算
+======================================== */
+
+/** 目標タンパク質(g) */
+const proteinGram = computed(() =>
+  Math.round((goal.value.calorie * goal.value.ratioProtein) / 100 / 4),
+)
+
+/** 目標脂質(g) */
+const fatGram = computed(() => Math.round((goal.value.calorie * goal.value.ratioFat) / 100 / 9))
+
+/** 目標炭水化物(g) */
+const carbGram = computed(() => Math.round((goal.value.calorie * goal.value.ratioCarb) / 100 / 4))
+
+/* ========================================
+   食事データ
+======================================== */
+
+/** @type {import('vue').Ref<Meal[]>} */
+const meals = ref([])
+
+/**
+ * 食事データ取得
+ * Supabaseからユーザーの食事履歴を取得
+ */
 const loadMeals = async () => {
   const { data, error } = await supabase
     .from('meals')
@@ -48,51 +139,10 @@ const loadMeals = async () => {
   }
 }
 
-onMounted(async () => {
-  const savedName = localStorage.getItem('username')
-  if (savedName) {
-    username.value = savedName
-    isEntered.value = true
-  }
-
-  const savedGoal = localStorage.getItem('goal')
-  if (savedGoal) goal.value = JSON.parse(savedGoal)
-
-  await loadMeals()
-})
-
-/* =============================
-   目標設定（カロリー＋PFC比率）
-============================= */
-const goal = ref({
-  calorie: 2000,
-  ratioProtein: 30,
-  ratioFat: 20,
-  ratioCarb: 50,
-})
-
-/* 🔥 自動計算（g換算） */
-const proteinGram = computed(() =>
-  Math.round((goal.value.calorie * goal.value.ratioProtein) / 100 / 4),
-)
-
-const fatGram = computed(() => Math.round((goal.value.calorie * goal.value.ratioFat) / 100 / 9))
-
-const carbGram = computed(() => Math.round((goal.value.calorie * goal.value.ratioCarb) / 100 / 4))
-
-/* =============================
-   食事登録
-============================= */
-const meals = ref([])
-
-const newMeal = ref({
-  name: '',
-  calorie: 0,
-  protein: 0,
-  fat: 0,
-  carb: 0,
-})
-
+/**
+ * 食事追加
+ * @param {Object} meal
+ */
 const addMeal = async (meal) => {
   const { data, error } = await supabase
     .from('meals')
@@ -117,6 +167,36 @@ const addMeal = async (meal) => {
   meals.value.unshift(data[0])
 }
 
+/**
+ * 食事削除
+ * @param {number} id
+ */
+const deleteMeal = async (id) => {
+  const { error } = await supabase.from('meals').delete().eq('id', id)
+
+  if (error) {
+    console.error(error)
+    return
+  }
+
+  meals.value = meals.value.filter((meal) => meal.id !== id)
+}
+
+/**
+ * 全データ削除
+ */
+const resetAll = async () => {
+  await supabase.from('meals').delete().eq('user_id', username.value)
+  meals.value = []
+}
+
+/* ========================================
+   合計計算
+======================================== */
+
+/**
+ * 今日の合計PFC
+ */
 const total = computed(() => {
   return meals.value.reduce(
     (acc, meal) => {
@@ -130,22 +210,22 @@ const total = computed(() => {
   )
 })
 
-const resetAll = async () => {
-  await supabase.from('meals').delete().eq('user_id', username.value)
+/* ========================================
+   初期化
+======================================== */
 
-  meals.value = []
-}
-
-const deleteMeal = async (id) => {
-  const { error } = await supabase.from('meals').delete().eq('id', id)
-
-  if (error) {
-    console.error(error)
-    return
+onMounted(async () => {
+  const savedName = localStorage.getItem('username')
+  if (savedName) {
+    username.value = savedName
+    isEntered.value = true
   }
 
-  meals.value = meals.value.filter((meal) => meal.id !== id)
-}
+  const savedGoal = localStorage.getItem('goal')
+  if (savedGoal) goal.value = JSON.parse(savedGoal)
+
+  await loadMeals()
+})
 </script>
 
 <template>
@@ -159,7 +239,7 @@ const deleteMeal = async (id) => {
 
       <div v-else>
         <div class="header">
-          <h1>Welcome {{ username }} 🐈</h1>
+          <h1>Welcome {{ username }} 😾</h1>
         </div>
 
         <div class="main-contents">
