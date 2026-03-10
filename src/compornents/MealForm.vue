@@ -136,13 +136,21 @@ watch(quantity, updateNutrition)
  * 同じ名前の食品が存在する場合は登録しない
  */
 const saveFood = async () => {
-  const { data } = await supabase.from('foods').select('id').eq('name', newMeal.value.name).limit(1)
+  const baseName = newMeal.value.name.split(' ×')[0]
 
-  if (data && data.length > 0) return
+  const { data } = await supabase.from('foods').select('id').eq('name', baseName).limit(1)
 
-  const { error } = await supabase.from('foods').insert([
+  // 既存food
+  if (data && data.length > 0) {
+    await supabase.from('foods').update({ date: new Date().toISOString() }).eq('id', data[0].id)
+
+    return
+  }
+
+  // 新規food
+  await supabase.from('foods').insert([
     {
-      name: newMeal.value.name,
+      name: baseName,
       calorie: newMeal.value.calorie,
       protein: newMeal.value.protein,
       fat: newMeal.value.fat,
@@ -150,10 +158,6 @@ const saveFood = async () => {
       date: new Date().toISOString(),
     },
   ])
-
-  if (error) {
-    console.error('foods登録エラー', error)
-  }
 }
 
 /* =====================================================
@@ -186,9 +190,9 @@ const resetForm = () => {
 const handleAdd = async () => {
   if (!newMeal.value.name) return
 
-  if (mode.value === 'manual') {
-    await saveFood()
-  }
+  await saveFood()
+
+  await fetchFoods()
 
   emit('add', { ...newMeal.value })
   emit('close')
