@@ -430,61 +430,6 @@ onMounted(async () => {
       </section>
 
       <!-- ==============================
-           今日の食事
-      =============================== -->
-      <section class="today-meals">
-
-        <div class="section-title">
-          <h2>🍽 今日の食事</h2>
-
-          <span>
-            {{ todayMeals.length }}件
-          </span>
-        </div>
-
-        <div
-          v-if="todayMeals.length === 0"
-          class="empty-meals"
-        >
-          まだ食事が登録されていません
-        </div>
-
-        <div
-          v-else
-          class="meal-list"
-        >
-
-          <div
-            v-for="meal in todayMeals"
-            :key="meal.id"
-            class="meal-item"
-          >
-
-            <div class="meal-info">
-              <strong>{{ meal.name }}</strong>
-
-              <span>
-                {{ meal.calorie }} kcal
-                · P{{ Number(meal.protein).toFixed(1) }}
-                F{{ Number(meal.fat).toFixed(1) }}
-                C{{ Number(meal.carb).toFixed(1) }}
-              </span>
-            </div>
-
-            <button
-              class="delete-btn"
-              @click="deleteMeal(meal.id)"
-            >
-              削除
-            </button>
-
-          </div>
-
-        </div>
-
-      </section>
-
-      <!-- ==============================
            グラフ
       =============================== -->
       <section class="details-section">
@@ -907,110 +852,6 @@ main {
 }
 
 /* ========================================
-   今日の食事
-======================================== */
-
-.today-meals {
-  margin-bottom: 18px;
-}
-
-.section-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  margin-bottom: 8px;
-}
-
-.section-title h2 {
-  margin: 0;
-
-  font-size: 1rem;
-}
-
-.section-title span {
-  color: #777;
-  font-size: 0.75rem;
-}
-
-.empty-meals {
-  background: #1e1e1e;
-
-  padding: 20px;
-
-  border-radius: 14px;
-
-  color: #777;
-
-  text-align: center;
-
-  font-size: 0.85rem;
-}
-
-.meal-list {
-  background: #1e1e1e;
-
-  border-radius: 14px;
-
-  overflow: hidden;
-}
-
-.meal-item {
-  display: flex;
-
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 10px;
-
-  padding: 13px;
-
-  border-bottom: 1px solid #303030;
-}
-
-.meal-item:last-child {
-  border-bottom: none;
-}
-
-.meal-info {
-  min-width: 0;
-
-  display: flex;
-  flex-direction: column;
-
-  gap: 4px;
-}
-
-.meal-info strong {
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  font-size: 0.9rem;
-}
-
-.meal-info span {
-  color: #888;
-
-  font-size: 0.7rem;
-}
-
-.delete-btn {
-  flex: none;
-
-  padding: 6px 9px;
-
-  border: none;
-  border-radius: 7px;
-
-  background: #3a2222;
-  color: #ff7070;
-
-  font-size: 0.7rem;
-}
-
-/* ========================================
    グラフ
 ======================================== */
 
@@ -1184,9 +1025,6 @@ button:hover {
     font-size: 1.1rem;
   }
 
-  .meal-item {
-    padding: 12px 10px;
-  }
 }
 
 /* ========================================
